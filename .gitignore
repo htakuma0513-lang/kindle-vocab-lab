@@ -1,0 +1,27 @@
+# Local/system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment and secrets
+.env
+.env.*
+*.key
+*.pem
+secrets.*
+
+# Dependencies/build output
+node_modules/
+dist/
+build/
+_site/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# User-exported vocab data
+kindle-vocabulary*.json
+kindle-vocabulary*.md
