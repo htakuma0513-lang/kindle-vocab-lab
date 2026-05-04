@@ -6,9 +6,9 @@ This app is a static site. It can be hosted on GitHub Pages without a build step
 
 1. Create a new GitHub repository.
 2. Push this folder to the repository's `main` branch.
-3. In the repository, open `Settings > Pages`.
-4. Set `Build and deployment > Source` to `GitHub Actions`.
-5. Push to `main`, or run `Deploy GitHub Pages` manually from the `Actions` tab.
+3. Push to `main`, or run `Deploy GitHub Pages` manually from the `Actions` tab.
+4. The workflow publishes the static app to the `gh-pages` branch.
+5. GitHub Pages serves the app from the `gh-pages` branch.
 
 Example commands after creating an empty GitHub repository:
 
@@ -30,7 +30,16 @@ The workflow publishes only these files:
 - `index.html`
 - `app.js`
 - `styles.css`
+- `manifest.webmanifest`
+- `service-worker.js`
+- `icons/`
 - `.nojekyll`
+
+## Android / PWA
+
+The app includes a web app manifest, PNG icons, and a service worker. On Android Chrome, open the GitHub Pages URL and choose `Install app` or `Add to Home screen`.
+
+The service worker caches the app shell, so the app can start after it has been loaded once. Dictionary API calls still need a network connection.
 
 ## Important privacy notes
 

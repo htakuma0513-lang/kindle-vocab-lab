@@ -3,8 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ff7a1a">
+    <meta name="description" content="Kindleで出会った英単語を、辞書情報・例文・段階的復習・学習分析で定着させる個人向け英単語ラボ。">
     <title>Kindle Vocab Lab</title>
-    <link rel="stylesheet" href="./styles.css?v=toggle-icon-1">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    <link rel="stylesheet" href="./styles.css?v=pwa-1">
   </head>
   <body>
     <div class="app-shell">
@@ -387,6 +392,13 @@
             <p class="settings-note">
               キーはこのブラウザのLocalStorageに保存されます。公開サイトにする場合は、キーをフロントエンドへ置かず、小さなサーバー経由にする必要があります。
             </p>
+            <section class="install-panel" aria-labelledby="installTitle">
+              <div>
+                <h3 id="installTitle">スマホに入れて使う</h3>
+                <p id="pwaStatus">Android Chromeで開くと、ホーム画面に追加してアプリのように起動できます。</p>
+              </div>
+              <button class="secondary-button" type="button" id="installAppButton" hidden>インストール</button>
+            </section>
             <div class="form-actions">
               <p id="settingsStatus" role="status"></p>
               <div class="button-row">
@@ -467,6 +479,6 @@
       </article>
     </template>
 
-    <script src="./app.js?v=toggle-icon-1"></script>
+    <script src="./app.js?v=pwa-1"></script>
   </body>
 </html>

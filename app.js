@@ -11,6 +11,7 @@ const state = {
   answerVisible: false,
   reviewNotice: "",
   editingId: null,
+  installPrompt: null,
   settings: {
     merriamWebsterKey: "",
     dailyReviewGoal: DEFAULT_DAILY_REVIEW_GOAL,
@@ -98,6 +99,8 @@ const elements = {
   mwKeyInput: $("#mwKeyInput"),
   clearSettingsButton: $("#clearSettingsButton"),
   settingsStatus: $("#settingsStatus"),
+  installAppButton: $("#installAppButton"),
+  pwaStatus: $("#pwaStatus"),
 };
 
 function todayIso() {
@@ -1560,6 +1563,7 @@ function renderSettings() {
   elements.settingsStatus.textContent = state.settings.merriamWebsterKey
     ? "Merriam-Websterを優先してカード生成します。"
     : "APIキー未設定です。無料辞書にフォールバックします。";
+  refreshPwaStatus();
 }
 
 function handleSettingsSubmit(event) {
@@ -1581,6 +1585,67 @@ function clearSettings() {
   renderSettings();
   renderProgressBoard();
   elements.settingsStatus.textContent = "設定を初期化しました。";
+}
+
+function isStandaloneApp() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function refreshPwaStatus() {
+  if (!elements.pwaStatus || !elements.installAppButton) return;
+
+  if (isStandaloneApp()) {
+    elements.pwaStatus.textContent = "ホーム画面からアプリとして起動中です。";
+    elements.installAppButton.hidden = true;
+    return;
+  }
+
+  if (state.installPrompt) {
+    elements.pwaStatus.textContent = "この端末ではインストールできます。ボタンを押すとホーム画面に追加できます。";
+    elements.installAppButton.hidden = false;
+    return;
+  }
+
+  elements.pwaStatus.textContent = "Android Chromeで公開URLを開き、メニューから「アプリをインストール」または「ホーム画面に追加」を選べます。";
+  elements.installAppButton.hidden = true;
+}
+
+async function installApp() {
+  if (!state.installPrompt) {
+    refreshPwaStatus();
+    return;
+  }
+
+  const promptEvent = state.installPrompt;
+  state.installPrompt = null;
+  promptEvent.prompt();
+  await promptEvent.userChoice.catch(() => null);
+  refreshPwaStatus();
+}
+
+function setupPwaInstallPrompt() {
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    state.installPrompt = event;
+    refreshPwaStatus();
+  });
+
+  window.addEventListener("appinstalled", () => {
+    state.installPrompt = null;
+    refreshPwaStatus();
+  });
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {
+      if (elements.pwaStatus) {
+        elements.pwaStatus.textContent = "オフライン起動の準備に失敗しました。再読み込みしてもう一度確認してください。";
+      }
+    });
+  });
 }
 
 async function copyText(text, button) {
@@ -1664,6 +1729,7 @@ function bindEvents() {
   elements.downloadJsonButton.addEventListener("click", () => downloadText("kindle-vocabulary.json", elements.jsonOutput.value, "application/json"));
   elements.settingsForm.addEventListener("submit", handleSettingsSubmit);
   elements.clearSettingsButton.addEventListener("click", clearSettings);
+  elements.installAppButton.addEventListener("click", installApp);
 }
 
 function renderAll() {
@@ -1678,6 +1744,8 @@ function renderAll() {
 function init() {
   loadState();
   loadSettings();
+  setupPwaInstallPrompt();
+  registerServiceWorker();
   bindEvents();
   rebuildReviewQueue();
   renderAll();

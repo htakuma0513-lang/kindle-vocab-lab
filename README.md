@@ -11,6 +11,10 @@ python -m http.server 5173 --bind 127.0.0.1
 
 ブラウザで `http://127.0.0.1:5173` を開きます。
 
+公開版は GitHub Pages から開けます。
+
+https://htakuma0513-lang.github.io/kindle-vocab-lab/
+
 ## できること
 
 - 単語、読み方、本のタイトル、日本語メモ、英英定義、出会った文、覚え方を登録
@@ -21,6 +25,8 @@ python -m http.server 5173 --bind 127.0.0.1
 - 使い方・型、コロケーション、例文、自作文、注意点を保存
 - `知らない / 微妙 / 覚えた` で次回復習日を自動更新
 - 学習分析タブで、ステージ分布、弱点ランキング、今日のおすすめ、最近の学習ログを確認
+- Android Chromeでホーム画面に追加できるPWA対応
+- Service Workerにより、読み込み済みのアプリ本体はオフラインでも起動
 - MarkdownとJSONでエクスポート
 
 ## 保存場所
@@ -43,6 +49,12 @@ APIキーはこのリポジトリには保存しません。各ブラウザのLo
 
 GitHub Pages向けのActionsワークフローを `.github/workflows/pages.yml` に用意しています。
 
-初回のみ、GitHubのリポジトリ設定で `Settings > Pages > Build and deployment > Source` を `GitHub Actions` にしてください。以後は `main` ブランチへpushすると自動で公開されます。
+公開ファイルは `gh-pages` ブランチへ自動反映されます。以後は `main` ブランチへpushすると自動で公開されます。
 
 詳しい手順は `DEPLOYMENT.md` を参照してください。
+
+## Androidでアプリのように使う
+
+Android Chromeで公開URLを開き、メニューから `アプリをインストール` または `ホーム画面に追加` を選びます。
+
+単語データとAPIキーは端末内のブラウザ保存です。PCや別端末へ移す場合は、出力タブからJSONを書き出して移動してください。
