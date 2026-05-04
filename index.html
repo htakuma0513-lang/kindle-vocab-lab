@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ff7a1a">
+    <meta name="description" content="Kindleで出会った英単語を、辞書情報・例文・段階的復習・学習分析で定着させる個人向け英単語ラボ。">
+    <title>Kindle Vocab Lab</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    <link rel="stylesheet" href="./styles.css?v=pwa-1">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">K</div>
+          <div>
+            <h1>Kindle Vocab Lab</h1>
+            <p id="todayLabel"></p>
+          </div>
+        </div>
+
+        <nav class="tabs" aria-label="ビュー">
+          <button class="tab is-active" type="button" data-view="review">
+            <span aria-hidden="true">↻</span>
+            <span>復習</span>
+            <strong id="dueCount">0</strong>
+          </button>
+          <button class="tab" type="button" data-view="add">
+            <span aria-hidden="true">＋</span>
+            <span>登録</span>
+          </button>
+          <button class="tab" type="button" data-view="library">
+            <span aria-hidden="true">□</span>
+            <span>単語</span>
+            <strong id="totalCount">0</strong>
+          </button>
+          <button class="tab" type="button" data-view="analysis">
+            <span aria-hidden="true">◌</span>
+            <span>分析</span>
+          </button>
+          <button class="tab" type="button" data-view="export">
+            <span aria-hidden="true">⇩</span>
+            <span>出力</span>
+          </button>
+          <button class="tab" type="button" data-view="settings">
+            <span aria-hidden="true">⚙</span>
+            <span>設定</span>
+          </button>
+        </nav>
+
+        <section class="stats" aria-label="学習状況">
+          <div>
+            <span>今日</span>
+            <strong id="todayStudied">0</strong>
+          </div>
+          <div>
+            <span>習得</span>
+            <strong id="masteredCount">0</strong>
+          </div>
+          <div>
+            <span>連続</span>
+            <strong id="streakCount">0</strong>
+          </div>
+        </section>
+      </aside>
+
+      <main class="main">
+        <section class="view is-active" id="reviewView" aria-labelledby="reviewTitle">
+          <div class="view-head">
+            <div>
+              <h2 id="reviewTitle">今日の復習</h2>
+              <p id="reviewSubtitle"></p>
+            </div>
+            <button class="icon-button" type="button" id="shuffleButton" title="順番を混ぜる" aria-label="順番を混ぜる">⤨</button>
+          </div>
+
+          <section class="progress-board" aria-label="学習進捗">
+            <div class="progress-card progress-focus">
+              <span>今日の目標</span>
+              <strong id="dailyGoalText">0 / 10</strong>
+              <div class="progress-track">
+                <div id="dailyGoalBar"></div>
+              </div>
+            </div>
+            <div class="progress-card">
+              <span>習得率</span>
+              <strong id="masteryRateText">0%</strong>
+              <div class="progress-track">
+                <div id="masteryRateBar"></div>
+              </div>
+            </div>
+            <div class="progress-card">
+              <span>今日の残り</span>
+              <strong id="remainingDueText">0語</strong>
+              <p id="remainingDueHint"></p>
+            </div>
+            <div class="progress-card weekly-card">
+              <span>7日間</span>
+              <div class="weekly-bars" id="weeklyBars"></div>
+            </div>
+          </section>
+
+          <div class="achievement-banner is-hidden" id="achievementBanner" role="status">
+            <strong id="achievementTitle"></strong>
+            <p id="achievementText"></p>
+          </div>
+
+          <article class="review-card" id="reviewCard">
+            <div class="empty-state" id="emptyReview">
+              <h3>今日は追い込みなし</h3>
+              <p>新しい単語を登録すると、ここに復習カードが出ます。</p>
+              <button class="primary-button" type="button" data-jump="add">単語を登録</button>
+            </div>
+
+            <div class="card-inner is-hidden" id="activeReview">
+              <div class="word-line">
+                <span id="reviewBook"></span>
+                <button class="ghost-button" type="button" id="speakButton">発音</button>
+              </div>
+              <h3 id="reviewWord"></h3>
+              <p class="phonetic" id="reviewPhonetic"></p>
+              <p class="review-source" id="reviewSource"></p>
+              <blockquote id="reviewContext"></blockquote>
+              <button class="definition-toggle" type="button" id="showAnswerButton">意味を見る</button>
+              <div class="answer is-hidden" id="reviewAnswer">
+                <div class="answer-grid">
+                  <section class="answer-block answer-primary">
+                    <span>意味の核</span>
+                    <p id="reviewMeaning"></p>
+                  </section>
+                  <section class="answer-block">
+                    <span>英英定義</span>
+                    <p id="reviewDefinition"></p>
+                  </section>
+                </div>
+
+                <section class="answer-block answer-task">
+                  <span>アウトプット練習</span>
+                  <p id="reviewProduction"></p>
+                </section>
+
+                <details class="answer-details">
+                  <summary>使い方・関連語・例文</summary>
+                  <div class="answer-detail-grid">
+                    <section class="answer-block">
+                      <span>使い方・型</span>
+                      <p id="reviewUsage"></p>
+                    </section>
+                    <section class="answer-block">
+                      <span>関連語</span>
+                      <p id="reviewCollocations"></p>
+                    </section>
+                    <section class="answer-block answer-wide">
+                      <span>例文</span>
+                      <p id="reviewExamples"></p>
+                    </section>
+                    <section class="answer-block answer-wide">
+                      <span>注意点</span>
+                      <p id="reviewNote"></p>
+                    </section>
+                  </div>
+                </details>
+              </div>
+              <div class="review-actions">
+                <button class="danger-button" type="button" data-grade="again">知らない</button>
+                <button class="secondary-button" type="button" data-grade="hard">微妙</button>
+                <button class="success-button" type="button" data-grade="good">覚えた</button>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="view" id="addView" aria-labelledby="addTitle">
+          <div class="view-head">
+            <div>
+              <h2 id="addTitle">単語登録</h2>
+              <p>読んでいる本の流れを切らない入力に寄せています。</p>
+            </div>
+          </div>
+
+          <form class="entry-form" id="entryForm">
+            <div class="field-row">
+              <label class="field grow">
+                <span>単語</span>
+                <input id="wordInput" name="word" autocomplete="off" enterkeyhint="done" placeholder="obscure">
+              </label>
+              <button class="secondary-button fetch-button" id="fetchButton" type="button">カード生成</button>
+              <button class="secondary-button translate-button" id="translateButton" type="button">訳語更新</button>
+            </div>
+
+            <div class="field-grid">
+              <label class="field">
+                <span>読み方</span>
+                <input id="phoneticInput" name="phonetic" placeholder="/əbˈskjʊr/">
+              </label>
+              <label class="field">
+                <span>本</span>
+                <input id="bookInput" name="book" placeholder="Kindle book title">
+              </label>
+            </div>
+
+            <label class="field">
+                <span>日本語メモ・意味の核</span>
+                <textarea id="meaningInput" name="meaning" rows="3" placeholder="訳語だけでなく、中心イメージや複数の意味を書きます。例: accommodate = 相手や状況に合うように場所・条件・予定などを調整して受け入れる"></textarea>
+              </label>
+
+            <label class="field">
+              <span>英英定義</span>
+              <textarea id="definitionInput" name="definition" rows="3" placeholder="not known to many people"></textarea>
+            </label>
+
+            <div class="field-grid">
+              <label class="field">
+                <span>使い方・型</span>
+                <textarea id="usageInput" name="usage" rows="5" placeholder="accommodate guests / accommodate a request / accommodate A to B"></textarea>
+              </label>
+              <label class="field">
+                <span>コロケーション・関連語</span>
+                <textarea id="collocationsInput" name="collocations" rows="5" placeholder="guests, customers, needs, request, schedule"></textarea>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>例文</span>
+              <textarea id="examplesInput" name="examples" rows="5" placeholder="The hotel can accommodate 200 guests."></textarea>
+            </label>
+
+            <label class="field">
+              <span>Kindleで出会った文</span>
+              <textarea id="contextInput" name="context" rows="4" placeholder="Kindle本文から実際の一文を入れる"></textarea>
+            </label>
+
+            <div class="field-grid">
+              <label class="field">
+                <span>自作文</span>
+                <textarea id="productionInput" name="production" rows="4" placeholder="自分の生活や仕事に関係する英文を1つ作ります。"></textarea>
+              </label>
+              <label class="field">
+                <span>覚え方・注意点</span>
+                <textarea id="noteInput" name="note" rows="4" placeholder="類義語との違い、間違えやすい使い方、自分の覚え方"></textarea>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <p id="formStatus" role="status"></p>
+              <button class="primary-button" type="submit">登録</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="view" id="libraryView" aria-labelledby="libraryTitle">
+          <div class="view-head">
+            <div>
+              <h2 id="libraryTitle">単語一覧</h2>
+              <p id="librarySubtitle"></p>
+            </div>
+            <input class="search-input" id="searchInput" placeholder="検索">
+          </div>
+          <div class="word-list" id="wordList"></div>
+        </section>
+
+        <section class="view" id="analysisView" aria-labelledby="analysisTitle">
+          <div class="view-head">
+            <div>
+              <h2 id="analysisTitle">学習分析</h2>
+              <p id="analysisSubtitle"></p>
+            </div>
+          </div>
+
+          <section class="analysis-summary" aria-label="学習分析サマリー">
+            <div class="analysis-card analysis-focus">
+              <span>今日の優先度</span>
+              <strong id="analysisDueCount">0語</strong>
+              <p>復習すべき単語から先に片づけます。</p>
+            </div>
+            <div class="analysis-card">
+              <span>記憶安定度</span>
+              <strong id="analysisRetentionScore">0%</strong>
+              <div class="mini-track">
+                <div id="analysisRetentionBar"></div>
+              </div>
+              <p>学習ステージと弱点の少なさから見た推定値です。</p>
+            </div>
+            <div class="analysis-card">
+              <span>弱点候補</span>
+              <strong id="analysisWeakCount">0語</strong>
+              <p>「知らない」「微妙」が多い単語です。</p>
+            </div>
+            <div class="analysis-card">
+              <span>習得済み</span>
+              <strong id="analysisMasteredRate">0%</strong>
+              <p>長期維持フェーズに入った割合です。</p>
+            </div>
+          </section>
+
+          <div class="analysis-grid">
+            <section class="analysis-panel">
+              <div class="panel-head">
+                <h3>今日のおすすめ</h3>
+                <p>いまのデータから次の一手を絞ります。</p>
+              </div>
+              <div class="recommendation-list" id="recommendationList"></div>
+            </section>
+
+            <section class="analysis-panel">
+              <div class="panel-head">
+                <h3>ステージ分布</h3>
+                <p>理解からアウトプットまでの進み具合です。</p>
+              </div>
+              <div class="stage-distribution" id="stageDistribution"></div>
+            </section>
+
+            <section class="analysis-panel analysis-wide">
+              <div class="panel-head">
+                <h3>弱点ランキング</h3>
+                <p>忘却・未完成カード・復習期限を合わせて見ています。</p>
+              </div>
+              <details class="analysis-explainer">
+                <summary>計算方法を見る</summary>
+                <div>
+                  <p>
+                    弱点スコアは、復習でつまずいた回数とカードの不足を合わせた優先度です。
+                    「知らない」を重く、「微妙」を中くらいに見て、直近5回の失敗・今日が復習期限・意味/型/例文/自作文の不足も加点します。
+                  </p>
+                  <p>
+                    記憶安定度は、学習ステージが進んでいるほど高く、弱点候補が多いほど下がる推定値です。
+                    厳密な記憶保持率ではなく、今日どこから手をつけるかの目安として使います。
+                  </p>
+                </div>
+              </details>
+              <div class="weak-word-list" id="weakWordList"></div>
+            </section>
+
+            <section class="analysis-panel analysis-wide">
+              <div class="panel-head">
+                <h3>最近の学習ログ</h3>
+                <p>評価の流れを見て、負荷が高すぎないか確認します。</p>
+              </div>
+              <div class="history-timeline" id="historyTimeline"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="exportView" aria-labelledby="exportTitle">
+          <div class="view-head">
+            <div>
+              <h2 id="exportTitle">エクスポート</h2>
+              <p>Obsidianで読みやすいMarkdownと、復元しやすいJSONを出せます。</p>
+            </div>
+          </div>
+
+          <div class="export-grid">
+            <section class="export-panel">
+              <h3>Markdown</h3>
+              <textarea id="markdownOutput" rows="14" readonly></textarea>
+              <div class="panel-actions">
+                <button class="secondary-button" type="button" id="copyMarkdownButton">コピー</button>
+                <button class="primary-button" type="button" id="downloadMarkdownButton">ダウンロード</button>
+              </div>
+            </section>
+            <section class="export-panel">
+              <h3>JSON</h3>
+              <textarea id="jsonOutput" rows="14" readonly></textarea>
+              <div class="panel-actions">
+                <button class="secondary-button" type="button" id="copyJsonButton">コピー</button>
+                <button class="primary-button" type="button" id="downloadJsonButton">ダウンロード</button>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="settingsView" aria-labelledby="settingsTitle">
+          <div class="view-head">
+            <div>
+              <h2 id="settingsTitle">設定</h2>
+              <p>Merriam-Webster Learner's Dictionary APIを優先して使います。</p>
+            </div>
+          </div>
+
+          <form class="entry-form" id="settingsForm">
+            <label class="field">
+              <span>1日の復習目標</span>
+              <input id="dailyGoalInput" type="number" min="1" max="100" step="1" inputmode="numeric" placeholder="10">
+            </label>
+            <label class="field">
+              <span>Merriam-Webster Learner's Dictionary API Key</span>
+              <input id="mwKeyInput" type="password" autocomplete="off" placeholder="your-api-key">
+            </label>
+            <p class="settings-note">
+              キーはこのブラウザのLocalStorageに保存されます。公開サイトにする場合は、キーをフロントエンドへ置かず、小さなサーバー経由にする必要があります。
+            </p>
+            <section class="install-panel" aria-labelledby="installTitle">
+              <div>
+                <h3 id="installTitle">スマホに入れて使う</h3>
+                <p id="pwaStatus">Android Chromeで開くと、ホーム画面に追加してアプリのように起動できます。</p>
+              </div>
+              <button class="secondary-button" type="button" id="installAppButton" hidden>インストール</button>
+            </section>
+            <div class="form-actions">
+              <p id="settingsStatus" role="status"></p>
+              <div class="button-row">
+                <button class="secondary-button" type="button" id="clearSettingsButton">削除</button>
+                <button class="primary-button" type="submit" id="saveSettingsButton">保存</button>
+              </div>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <template id="wordItemTemplate">
+      <article class="word-item">
+        <div class="word-main">
+          <div class="word-top">
+            <div>
+              <h3></h3>
+              <p class="item-meta"></p>
+            </div>
+            <span class="status-pill"></span>
+          </div>
+
+          <div class="word-preview-grid">
+            <section class="preview-block">
+              <span>意味</span>
+              <p class="item-core"></p>
+            </section>
+            <section class="preview-block">
+              <span>型</span>
+              <p class="item-usage"></p>
+            </section>
+            <section class="preview-block">
+              <span>例文</span>
+              <p class="item-example"></p>
+            </section>
+          </div>
+
+          <details class="word-details">
+            <summary>全文を見る</summary>
+            <dl>
+              <div>
+                <dt>意味</dt>
+                <dd class="detail-meaning"></dd>
+              </div>
+              <div>
+                <dt>型</dt>
+                <dd class="detail-usage"></dd>
+              </div>
+              <div>
+                <dt>例文</dt>
+                <dd class="detail-examples"></dd>
+              </div>
+              <div>
+                <dt>英英定義</dt>
+                <dd class="detail-definition"></dd>
+              </div>
+              <div>
+                <dt>関連語</dt>
+                <dd class="detail-collocations"></dd>
+              </div>
+              <div>
+                <dt>出会った文</dt>
+                <dd class="detail-context"></dd>
+              </div>
+              <div>
+                <dt>自作文</dt>
+                <dd class="detail-production"></dd>
+              </div>
+            </dl>
+          </details>
+        </div>
+        <div class="item-actions">
+          <button class="ghost-button" type="button" data-action="edit">編集</button>
+          <button class="ghost-button" type="button" data-action="reset">復習へ</button>
+          <button class="delete-button" type="button" data-action="delete">削除</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="./app.js?v=pwa-1"></script>
+  </body>
+</html>

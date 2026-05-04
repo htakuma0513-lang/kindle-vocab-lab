@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Kindle Vocab Lab icon">
+  <rect width="512" height="512" rx="112" fill="#ff7a1a"/>
+  <path d="M96 112c0-22 18-40 40-40h240c22 0 40 18 40 40v288c0 22-18 40-40 40H136c-22 0-40-18-40-40V112Z" fill="#fffaf3"/>
+  <path d="M132 112c0-10 8-18 18-18h212c10 0 18 8 18 18v278c0 10-8 18-18 18H150c-10 0-18-8-18-18V112Z" fill="#101010"/>
+  <path d="M182 344V168h46v69h4l52-69h54l-66 82 70 94h-56l-53-74h-5v74h-46Z" fill="#fffaf3"/>
+  <circle cx="362" cy="142" r="20" fill="#ff7a1a"/>
+</svg>
